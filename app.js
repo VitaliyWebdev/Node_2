@@ -44,35 +44,6 @@ app.engine('.hbs', expressHbs({
 app.set('views', path.join(__dirname, 'static')) //тут вказується де вони лежать
 //===CONFIG END===================
 
-
-// function getUsersFromBase() {
-//     fs.readFile(path.join(__dirname, 'fake-data-base.json'), (err, data) => {
-//         if (err) {
-//             console.log(err);
-//             return;
-//         }
-//         users.push(JSON.parse(data));
-// });
-
-
-// })
-//получу дані з бази даних і запушу в масив юзерів
-// app.get('/users', (req, res) => {
-//     // getUsersFromBase()
-//     res.render('users', {users})
-// })
-//
-// app.get('/login',(req, res) => {
-//     res.render('login')
-// })
-//
-// app.post('/login',(req, res) => {
-//     const params = req.params;
-//     console.log('************************');
-//     console.log(params);
-//     console.log('************************')
-// })
-
 const users = []
 app.get('/register', (req, res) => {
     res.render('register')
@@ -86,9 +57,13 @@ app.post('/register', (req, res) => {
             console.log(err);
             return;
         }
-        if (users.some(el => el.name === createdUser.name)) {
-            console.log('User with this name already created try different name!')
-            return;
+        const parsedData = JSON.parse(data);
+        console.log(parsedData, 'parsedData')
+        console.log(createdUser, 'created');
+        if (parsedData.some(el => el.email === createdUser.email)) {
+
+            res.redirect('/error')
+            return
         }
         users.push(createdUser);
         fs.writeFile(pathToData, JSON.stringify(users), err => {
@@ -100,6 +75,7 @@ app.post('/register', (req, res) => {
         })
     })
 })
+
 app.get('/users', (req, res) => {
     res.render('users', {users})
 })
@@ -120,17 +96,25 @@ app.post('/login', (req, res) => {
         //findedUser то буде той шо ми ввели в логіні
         const index = parsedData.indexOf(findedUser);
         if (findedUser) {
-            res.redirect(`/user/:${index}`)
+            res.redirect(`/user/${index}`);
+            return;
         }
+        res.redirect('/register')
     })
-
-
 })
+
 app.get('/user/:id', (req, res) => {
-    res.render('chosenUser')
-    const params = req.params;
-    console.log(params, 'params');
-    // const chosenUser = users[id];
-    // console.log(chosenUser, '**********************');
-    res.render('chosenUser')
+    fs.readFile(pathToData, (err, data) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        const parsedData = JSON.parse(data);
+        const chosen = parsedData[req.params.id];
+        res.render('chosenUser', {chosen})
+    })
+})
+
+app.get('/error', (req, res) => {
+    res.render('error')
 })
