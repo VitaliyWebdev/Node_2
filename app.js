@@ -58,10 +58,7 @@ app.post('/register', (req, res) => {
             return;
         }
         const parsedData = JSON.parse(data);
-        console.log(parsedData, 'parsedData')
-        console.log(createdUser, 'created');
         if (parsedData.some(el => el.email === createdUser.email)) {
-
             res.redirect('/error')
             return
         }
